@@ -53,8 +53,9 @@ class FeatureEngineer:
         net_move = displacement / atr_w.replace(0, np.nan)
         path = path_raw / atr_w.replace(0, np.nan)
 
-        range_high = high.rolling(cfg.window).max()
-        range_low = low.rolling(cfg.window).min()
+        # Use prior window (up to t-1) to avoid range always containing current close
+        range_high = high.shift(1).rolling(cfg.window).max()
+        range_low = low.shift(1).rolling(cfg.window).min()
         range_width = (range_high - range_low)
         range_w = range_width / atr_w.replace(0, np.nan)
 
