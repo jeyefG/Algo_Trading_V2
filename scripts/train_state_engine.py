@@ -43,7 +43,18 @@ def parse_args() -> argparse.Namespace:
         required=True,
         help="Fecha fin (YYYY-MM-DD) para descarga H1",
     )
-    parser.add_argument("--model-out", type=Path, required=True, help="Model output path")
+    parser.add_argument(
+        "--model-out",
+        type=Path,
+        default=None,
+        help="Model output path. Si no se indica, se genera automáticamente desde el símbolo.",
+    )
+    parser.add_argument(
+        "--model-dir",
+        type=Path,
+        default=Path("models"),
+        help="Directorio base para guardar el modelo cuando --model-out no se especifica.",
+    )
     parser.add_argument("--log-level", default="INFO", help="Logging level (INFO, DEBUG, WARNING)")
     parser.add_argument("--min-samples", type=int, default=2000, help="Minimum samples required to train")
     parser.add_argument("--split-ratio", type=float, default=0.8, help="Train/test split ratio (0-1)")
@@ -144,6 +155,15 @@ def render_table(
 
 def main() -> None:
     args = parse_args()
+    
+    def _safe_symbol(sym: str) -> str:
+    # deja letras/números/._- y reemplaza lo demás por _
+        return "".join(ch if (ch.isalnum() or ch in "._-") else "_" for ch in sym)
+
+    if args.model_out is None:
+        sym = _safe_symbol(args.symbol)
+        args.model_out = args.model_dir / f"{sym}_state_engine.pkl"
+        
     rich_modules = try_import_rich() if not args.no_rich else None
     logger = setup_logging(args.log_level)
 
