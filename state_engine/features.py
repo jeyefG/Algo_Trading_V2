@@ -68,7 +68,7 @@ class FeatureEngineer:
             cfg.recent_window,
         )
         inside_ratio = self._inside_bars_ratio(high, low, cfg.recent_window)
-        swing_counts = self._swing_counts(high, low, cfg.window)
+        swing_high, swing_low = self._swing_counts(high, low, cfg.window)
 
         atr_ratio = atr_n / atr_w.replace(0, np.nan)
 
@@ -82,7 +82,8 @@ class FeatureEngineer:
                 "BreakMag": break_mag,
                 "ReentryCount": reentry,
                 "InsideBarsRatio": inside_ratio,
-                "SwingCount": swing_counts,
+                "SwingHighCount": swing_high,
+                "SwingLowCount": swing_low,
                 "ATR_Ratio": atr_ratio,
             },
             index=ohlcv.index,
@@ -103,7 +104,8 @@ class FeatureEngineer:
             "BreakMag",
             "ReentryCount",
             "InsideBarsRatio",
-            "SwingCount",
+            "SwingHighCount",
+            "SwingLowCount",
             "ATR_Ratio",
         ]
         if self.config.include_er_netmove:
@@ -179,11 +181,16 @@ class FeatureEngineer:
         return inside.rolling(window).mean()
 
     @staticmethod
-    def _swing_counts(high: pd.Series, low: pd.Series, window: int) -> pd.Series:
-        pivot_high = (high > high.shift(1)) & (high > high.shift(-1))
-        pivot_low = (low < low.shift(1)) & (low < low.shift(-1))
-        swings = (pivot_high | pivot_low).shift(1)
-        return swings.rolling(window).sum()
+    def _swing_counts(high: pd.Series, low: pd.Series, window: int) -> tuple[pd.Series, pd.Series]:
+        prev_high = high.shift(1)
+        prev_low = low.shift(1)
+        prev_high_2 = high.shift(2)
+        prev_low_2 = low.shift(2)
+        pivot_high = (prev_high > prev_high_2) & (prev_high > high)
+        pivot_low = (prev_low < prev_low_2) & (prev_low < low)
+        swing_high = pivot_high.astype(int).rolling(window).sum().fillna(0.0)
+        swing_low = pivot_low.astype(int).rolling(window).sum().fillna(0.0)
+        return swing_high, swing_low
 
     @staticmethod
     def _slope(series: pd.Series, window: int) -> pd.Series:
