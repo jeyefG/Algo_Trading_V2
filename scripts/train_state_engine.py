@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime
 from pathlib import Path
 
 import sys
@@ -22,14 +23,25 @@ from state_engine.pipeline import DatasetBuilder
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train State Engine model.")
     parser.add_argument("--symbol", required=True, help="Símbolo MT5 (ej. EURUSD)")
-    parser.add_argument("--start-pos", type=int, required=True, help="Posición inicial en MT5")
-    parser.add_argument("--count", type=int, required=True, help="Cantidad de velas a descargar")
+    parser.add_argument(
+        "--start",
+        required=True,
+        help="Fecha inicio (YYYY-MM-DD) para descarga H1",
+    )
+    parser.add_argument(
+        "--end",
+        required=True,
+        help="Fecha fin (YYYY-MM-DD) para descarga H1",
+    )
     parser.add_argument("--model-out", type=Path, required=True, help="Model output path")
     args = parser.parse_args()
 
+    start = datetime.fromisoformat(args.start)
+    end = datetime.fromisoformat(args.end)
+
     connector = MT5Connector()
     try:
-        ohlcv = connector.obtener_h1(args.symbol, args.start_pos, args.count)
+        ohlcv = connector.obtener_h1(args.symbol, start, end)
     finally:
         connector.shutdown()
 
