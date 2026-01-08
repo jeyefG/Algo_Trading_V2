@@ -22,6 +22,7 @@ class StateEngineModelConfig:
     n_estimators: int = 300
     max_depth: int = -1
     random_state: int = 42
+    class_weight: str | dict[int, float] | None = None
 
 
 class StateEngineModel:
@@ -42,6 +43,7 @@ class StateEngineModel:
             n_estimators=self.config.n_estimators,
             max_depth=self.config.max_depth,
             random_state=self.config.random_state,
+            class_weight=self.config.class_weight,
         )
         model.fit(features, labels)
         self._model = model
@@ -55,7 +57,7 @@ class StateEngineModel:
             columns=["P(balance)", "P(transition)", "P(trend)"],
             index=features.index,
         )
-    
+
     def predict_outputs(self, features: pd.DataFrame) -> pd.DataFrame:
         """Predict state, margin, and probabilities for reporting."""
         probas = self.predict_proba(features)
