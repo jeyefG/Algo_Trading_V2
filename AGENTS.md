@@ -270,6 +270,7 @@ No introduce lógica adicional ni heurísticas implícitas.
 - No se usan fuentes externas ni feeds alternativos.
 - El rango temporal de entrenamiento se define explícitamente por symbol, start, end.
 - El manejo de timezone, resampling y NaN se realiza antes de cualquier cálculo de features.
+- Se filtran velas H1 **cerradas** usando la hora del servidor MT5 (no se incluye la vela en formación).
 
 ### Cálculo de variables PA-first (H1)
 - Todas las variables se calculan **exclusivamente con información ≤ t**.
@@ -339,6 +340,7 @@ Si state_hat == TRANSICIÓN:
 - El pipeline sigue estrictamente este orden:
    1) Descarga de datos (MT5).
    2) Limpieza básica y alineación temporal.
+      - Se aplica guardrail temporal con la hora del servidor MT5 para usar solo velas cerradas.
    3) Cálculo de variables PA-first.
    4) Generación de etiquetas bootstrap (offline).
    5) Entrenamiento del modelo StateEngine.

@@ -8,7 +8,8 @@ python scripts/train_state_engine.py \
   --start 2024-01-01 \
   --end 2025-12-31 \
   --model-out models/xauusd_state_engine.pkl \
-  --report-out reports/xauusd_state_engine.json
+  --report-out reports/xauusd_state_engine.json \
+  --class-weight-balanced
 ```
 
 Opciones útiles:
@@ -17,6 +18,8 @@ Opciones útiles:
 - `--min-samples 2000`
 - `--split-ratio 0.8`
 - `--no-rich` (salida básica sin Rich)
+- `--class-weight-balanced` (usa `class_weight="balanced"` en LightGBM)
+- `--report-out` (guarda un reporte JSON con métricas, gating y metadatos)
 
 ## Before (salida anterior, simplificada)
 
@@ -47,6 +50,7 @@ stage=predict_outputs
 outputs_rows=20350 elapsed=0.05s
 stage=gating
 gating_allow_rate=34.20% elapsed=0.01s
+gating_thresholds={'trend_margin_min': 0.15, 'balance_margin_min': 0.1, 'transition_margin_min': 0.1, 'transition_breakmag_min': 0.25, 'transition_reentry_min': 1}
 stage=save_model
 model_path=models/xauusd_state_engine.pkl elapsed=0.00s
 
@@ -57,6 +61,10 @@ Samples: 20350 (train=16280, test=4070)
 Baseline: BALANCE (45.10%)
 Accuracy: 0.6243 | F1 Macro: 0.5981
 Gating allow rate: 34.20%
+Last H1 bar used: 2025-06-01 12:00:00 | age_min=4.00
+Server now (tick): 2025-06-01 12:04:00 | tick_age_min_vs_utc=0.25
+Last bar decision: ALLOW=True | state_hat=BALANCE | margin=0.2134
+Last bar rules fired: ['ALLOW_balance_fade']
 Model saved: models/xauusd_state_engine.pkl
 Report saved: reports/xauusd_state_engine.json
 ```
