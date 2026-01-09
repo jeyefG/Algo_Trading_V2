@@ -6,7 +6,9 @@ import argparse
 from dataclasses import asdict
 from datetime import datetime, timedelta
 from pathlib import Path
+import signal
 import sys
+import threading
 import time
 from typing import Any
 
@@ -220,6 +222,8 @@ def main() -> None:
         last_seen: dict[str, pd.Timestamp] = {}
 
         while True:
+            if stop_event.is_set():
+                break
             for symbol in symbols:
                 server_now = connector.server_now(symbol).tz_localize(None)
                 cutoff = server_now.floor("h")
@@ -269,7 +273,8 @@ def main() -> None:
 
             if args.once:
                 break
-            time.sleep(args.poll_seconds)
+            if stop_event.wait(timeout=args.poll_seconds):
+                break
     finally:
         connector.shutdown()
 
