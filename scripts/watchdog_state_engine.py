@@ -205,14 +205,6 @@ def main() -> None:
     if not symbols:
         raise ValueError("Debe especificar al menos un símbolo en --symbols.")
 
-    stop_event = threading.Event()
-
-    def _handle_stop(signum: int, frame: Any) -> None:
-        stop_event.set()
-
-    signal.signal(signal.SIGINT, _handle_stop)
-    signal.signal(signal.SIGTERM, _handle_stop)
-
     rich_modules = try_import_rich()
     console = rich_modules["Console"]() if rich_modules else None
     connector = MT5Connector()
