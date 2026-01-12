@@ -211,6 +211,13 @@ def main() -> None:
     models: dict[str, StateEngineModel] = {}
     model_paths: dict[str, Path] = {}
     feature_configs: dict[str, FeatureConfig] = {}
+    
+    def _signal_handler(sig: int, frame: Any) -> None:
+        stop_event.set()
+    
+    stop_event = threading.Event()
+    signal.signal(signal.SIGINT, _signal_handler)
+    signal.signal(signal.SIGTERM, _signal_handler)  
 
     try:
         for symbol in symbols:
